@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniShow Time</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #ffe8e8;
+        }
+        .neu-border {
+            border: 3px solid #000;
+            box-shadow: 5px 5px 0px #000;
+        }
+        .neu-button {
+            background: #ffcf56;
+            border: 3px solid #000;
+            box-shadow: 3px 3px 0px #000;
+            transition: all 0.2s;
+        }
+        .neu-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #000;
+        }
+        .event-image {
+            height: 200px;
+            object-fit: cover;
+        }
+        .tab-active {
+            background: #ffcf56;
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #000;
+        }
+        @media (max-width: 768px) {
+            .tab-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <!-- Login Section -->
+    <div id="loginSection" class="container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white p-8 rounded-lg neu-border">
+            <h1 class="text-4xl font-bold text-center mb-8">UniShow Time</h1>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block mb-2 font-bold">Email</label>
+                    <input type="email" id="email" required class="w-full p-2 neu-border">
+                </div>
+                <div>
+                    <label class="block mb-2 font-bold">Password</label>
+                    <input type="password" id="password" required class="w-full p-2 neu-border">
+                </div>
+                <button type="submit" class="w-full neu-button font-bold py-2 px-4 rounded">LOGIN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="homeSection" class="hidden container mx-auto px-4 py-8">
+        <nav class="flex justify-between items-center mb-8 bg-white p-4 rounded-lg neu-border">
+            <h1 class="text-2xl font-bold">UniShow Time</h1>
+            <div class="flex gap-4">
+                <button id="myBookingsBtn" class="neu-button px-4 py-2 rounded font-bold">My Bookings</button>
+                <button id="logoutBtn" class="neu-button px-4 py-2 rounded font-bold">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Event Tabs -->
+        <div class="flex justify-center mb-8 space-x-4 text-lg tab-container">
+            <button class="tab-button tab-active px-6 py-2 neu-border rounded font-bold" data-tab="upcoming">Upcoming Events</button>
+            <button class="tab-button px-6 py-2 neu-border rounded font-bold" data-tab="ongoing">Ongoing Events</button>
+            <button class="tab-button px-6 py-2 neu-border rounded font-bold" data-tab="past">Past Events</button>
+        </div>
+
+        <!-- Events Container -->
+        <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Events will be dynamically populated here -->
+        </div>
+    </div>
+
+    <script>
+        const events = {
+            upcoming: [
+                {
+                    title: "DHOOM 2025",
+                    description: "The biggest cultural fest of the year with dance, music, and drama!",
+                    date: "Feb 15-17, 2024",
+                    image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                    price: "₹599"
+                },
+                {
+                    title: "InnovateTech Summit",
+                    description: "Innovation meets technology in this grand tech symposium",
+                    date: "Jan 25-26, 2024",
+                    image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                    price: "₹299"
+                }
+            ],
+            ongoing: [
+                {
+                    title: "Summer Code Camp",
+                    description: "Month-long coding bootcamp with industry experts",
+                    date: "Dec 1-31, 2023",
+                    image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                    price: "₹999"
+                }
+            ],
+            past: [
+                {
+                    title: "Projections 25",
+                    description: "Gujarat's Largest Techfest featuring robotics, coding, and innovation",
+                    date: "Nov 15-17, 2023",
+                    image: "https://images.unsplash.com/photo-1517976487492-5750f3195933?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                    price: "Completed"
+                },
+                {
+                    title: "Startup Weekend",
+                    description: "72-hour entrepreneurship challenge",
+                    date: "Oct 20-22, 2023",
+                    image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80",
+                    price: "Completed"
+                }
+            ]
+        };
+
+        let myBookings = [];
+
+        function displayEvents(category) {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = '';
+            
+            events[category].forEach(event => {
+                const eventCard = `
+                    <div class="bg-white rounded-lg neu-border overflow-hidden">
+                        <img src="${event.image}" alt="${event.title}" class="w-full event-image">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">${event.title}</h3>
+                            <p class="mb-4">${event.description}</p>
+                            <div class="flex justify-between items-center flex-wrap gap-2">
+                                <span class="font-bold">${event.date}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold">${event.price}</span>
+                                    ${category !== 'past' ? 
+                                        `<button class="neu-button px-4 py-2 rounded font-bold text-sm">Book Now</button>` : 
+                                        `<span class="text-gray-500 font-bold">Event Ended</span>`}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += eventCard;
+            });
+
+            if (category !== 'past') {
+                document.querySelectorAll('.neu-button').forEach(button => {
+                    if (button.textContent === 'Book Now') {
+                        button.addEventListener('click', function() {
+                            const eventCard = this.closest('div.bg-white');
+                            const eventName = eventCard.querySelector('h3').textContent;
+                            const eventDate = eventCard.querySelector('span.font-bold').textContent;
+                            myBookings.push({ name: eventName, date: eventDate });
+                            alert(`Booking confirmed for ${eventName}!`);
+                        });
+                    }
+                });
+            }
+        }
+
+        document.getElementById('myBookingsBtn').addEventListener('click', function() {
+            if (myBookings.length === 0) {
+                alert('No bookings yet!');
+                return;
+            }
+            let bookingsText = 'Your Bookings:\n\n';
+            myBookings.forEach((booking, index) => {
+                bookingsText += `${index + 1}. ${booking.name} on ${booking.date}\n`;
+            });
+            alert(bookingsText);
+        });
+
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('tab-active'));
+                this.classList.add('tab-active');
+                displayEvents(this.dataset.tab);
+            });
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('homeSection').classList.remove('hidden');
+            displayEvents('upcoming');
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('homeSection').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+            myBookings = [];
+        });
+
+        displayEvents('upcoming');
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
